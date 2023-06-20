@@ -1,3 +1,4 @@
+from typing import Any
 from rest_framework import generics
 
 from .models import *
@@ -22,3 +23,5 @@ class FeedingInfoListAPIView(generics.ListAPIView):
 class RuleListAPIView(generics.ListAPIView):
     queryset = Rule.objects.all()
     serializer_class = RuleSerializer
+
+

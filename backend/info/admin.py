@@ -75,13 +75,14 @@ class InfoAdmin(admin.ModelAdmin):
 
     @admin.display(description='')
     def change(self, obj):
+        Info.load().save()
         return mark_safe(f'<b>Изменить</b>')
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         try:
             Info.load().save()
-        except ProgrammingError:
+        except Exception:
             pass
     
     def has_add_permission(self, request, obj=None):
@@ -168,7 +169,7 @@ class FeedingInfoAdmin(admin.ModelAdmin):
         super().__init__(model, admin_site)
         try:
             FeedingInfo.load().save()
-        except ProgrammingError:
+        except Exception:
             pass
     
     def has_add_permission(self, request, obj=None):
@@ -239,7 +240,7 @@ class RulesAdmin(admin.ModelAdmin):
         super().__init__(model, admin_site)
         try:
             RulesInfo.load().save()
-        except ProgrammingError:
+        except Exception:
             pass
     
     def has_add_permission(self, request, obj=None):

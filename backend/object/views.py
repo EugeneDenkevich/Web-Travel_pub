@@ -28,51 +28,6 @@ class ObjectRetrieveApiView(generics.RetrieveAPIView):
     serializer_class = ObjectSerializer
 
 
-# class DishListAPIView(generics.ListAPIView):
-#     queryset = Dish.objects.all()
-#     serializer_class = DishSerializer
-
-
-# class FeedingInfoListAPIView(generics.ListAPIView):
-#     queryset = FeedingInfo.objects.all()
-#     serializer_class = FeedingInfoSerializer
-
-
-# class EntertaimentListAPIView(generics.ListAPIView):
-#     queryset = Entertaiment.objects.all().prefetch_related('prices', 'photos')
-#     serializer_class = EntertaimentSerializer
-
-
-# class EntertaimentRetrieveApiView(generics.RetrieveAPIView):
-#     queryset = Entertaiment.objects.all()
-#     serializer_class = EntertaimentSerializer
-
-
-# class RuleListAPIView(generics.ListAPIView):
-#     queryset = Rule.objects.all()
-#     serializer_class = RuleSerializer
-
-
-# class InfoListAPIView(generics.ListAPIView):
-#     queryset = Info.objects.all().prefetch_related('socials')
-#     serializer_class = InfoSerializer
-
-
 class PurchaseCreateAPIView(generics.CreateAPIView):
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
-
-
-# class GaleryListAPIView(generics.ListAPIView):
-#     queryset = Galery.objects.all().prefetch_related('photos')
-#     serializer_class = GalerySerializer
-
-
-# class GaleryRetrieveApiView(generics.RetrieveAPIView):
-#     queryset = Galery.objects.all()
-#     serializer_class = GalerySerializer
-
-
-# class NearestPlaceListAPIView(generics.ListAPIView):
-#     queryset = NearestPlace.objects.all().prefetch_related('photos')
-#     serializer_class = NearestPlaceSerializer

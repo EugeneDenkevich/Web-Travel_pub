@@ -24,9 +24,9 @@ class SingletonModel(models.Model):
 
 
 class Info(SingletonModel):
-    address = models.TextField(max_length=1000, verbose_name=u'Адрес')
-    comment = models.TextField(max_length=1000, verbose_name=u'Комментарий')
-    geolocation = models.TextField(max_length=1000, verbose_name=u'Геолокация')
+    address = models.TextField(max_length=1000, verbose_name=u'Адрес', blank=True, null=True)
+    comment = models.TextField(max_length=1000, verbose_name=u'Комментарий', blank=True, null=True)
+    geolocation = models.TextField(max_length=1000, verbose_name=u'Геолокация', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Общая информация'
@@ -42,7 +42,7 @@ class Info(SingletonModel):
         socials_objects = self.socials.all()
         social = [{s.type: s.link} for s in socials_objects]
         return social
-    
+
 
 class PhoneNumber(models.Model):
     phone = models.CharField(max_length=256, verbose_name = u'Телефон')
