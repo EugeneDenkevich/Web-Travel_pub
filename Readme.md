@@ -47,9 +47,6 @@ After it ask the SECRET_KEY from developer and paste it into .env instead of wha
 cd backend
 ```
 ```bash
-python manage.py makemigrations
-```
-```bash
 python manage.py migrate
 ```
 ```bash
