@@ -3,7 +3,8 @@
 
 .vscode
 static
-media
+db
+eugene_studio.sqlite3
 
 ### Django ###
 *.log

@@ -1,0 +1,46 @@
+version: "v1"
+
+services:
+  mysql:
+      image: mysql:latest
+      command: --default-authentication-plugin=mysql_native_password
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: 'Mediator4424011991'
+        MYSQL_DATABASE:  'eugenest_myappdb'
+        MYSQL_USER: 'eugenest_eugenest'
+        MYSQL_PASSWORD: 'Mediator4424011991'
+      ports:
+        - '3305:3306'
+      volumes:
+        - db:/var/lib/mysql
+        - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  django_api:
+    env_file:
+      - ./backend/.env
+    build:
+      context: ./backend
+    image: django_api
+    ports: 
+      - "4000:8000"
+    depends_on:
+      - mysql
+    volumes:
+      - ./backend/src:/backend_app/src
+      - ./backend/requirements.txt:/backend_app/requirements.txt
+    restart: always
+    links:
+      - mysql
+    environment:
+      DJANGO_ADMIN_USERNAME: 'admin'
+      DJANGO_SUPERUSER_PASSWORD: '123123'
+    command: >
+        sh -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               python check_admin.py &&
+               python manage.py runserver 0.0.0.0:8000 "
+
+volumes:
+  db:
+    driver: local
