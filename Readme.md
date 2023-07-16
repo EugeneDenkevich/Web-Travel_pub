@@ -5,6 +5,7 @@
 After cloning the repository open it as a work directory. Then do the following:
 
 ```bash
+cp backend/.env-example backend/.env
 docker-compose up --build -d
 ```
 
