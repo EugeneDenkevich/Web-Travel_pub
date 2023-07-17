@@ -28,7 +28,7 @@ services:
       - mysql
     volumes:
       - ./backend/src:/backend_app/src
-      - ./backend/requirements.txt:/backend_app/requirements.txt
+      - ./backend/media:/media
     restart: always
     links:
       - mysql
@@ -39,7 +39,8 @@ services:
         sh -c "python manage.py makemigrations &&
                python manage.py migrate &&
                python check_admin.py &&
-               python manage.py runserver 0.0.0.0:8000 "
+               python manage.py collectstatic --noinput &&
+               python manage.py runserver 0.0.0.0:8000"
 
 volumes:
   db:

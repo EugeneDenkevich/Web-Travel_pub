@@ -3,7 +3,6 @@ import os
 from django.db import models
 
 from config.validators import validate_image_size
-from config.settings import DEFAULT_IMAGES
 
 
 class Singleton(models.Model):
@@ -73,22 +72,22 @@ class PhotoMainPage(models.Model):
 
 class BackPhoto(Singleton):
     photo_m = models.ImageField(upload_to='photo_pages',
-                                default=os.path.join(*DEFAULT_IMAGES.get('main')),
-                                validators=[validate_image_size], verbose_name='Фон Главная')
+                                validators=[validate_image_size], verbose_name='Фон Главная',
+                                blank=True, null=True)
     photo_h = models.ImageField(upload_to='photo_pages',
-                                default=os.path.join(*DEFAULT_IMAGES.get('houses')),
-                                validators=[validate_image_size], verbose_name='Фон Домики')
+                                validators=[validate_image_size], verbose_name='Фон Домики',
+                                blank=True, null=True)
     photo_k = models.ImageField(upload_to='photo_pages',
-                                default=os.path.join(*DEFAULT_IMAGES.get('kitchen')),
-                                validators=[validate_image_size], verbose_name='Фон Кухня')
+                                validators=[validate_image_size], verbose_name='Фон Кухня',
+                                blank=True, null=True)
     photo_e = models.ImageField(upload_to='photo_pages',
-                                default=os.path.join(*DEFAULT_IMAGES.get('entertainment')),
-                                validators=[validate_image_size], verbose_name='Фон Развлечения')
+                                validators=[validate_image_size], verbose_name='Фон Развлечения',
+                                blank=True, null=True)
 
     class Meta:
         verbose_name = 'Фоновые фото'
         verbose_name_plural = 'Фоновые фото'
-        
+
     def __str__(self):
         return f'ID - {self.pk}'
 

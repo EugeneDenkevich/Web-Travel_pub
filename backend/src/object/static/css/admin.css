@@ -1,0 +1,26 @@
+:root {
+    --primary: #626280;
+    --secondary: #2f2f42;
+    --accent: #f0ebf1;
+    --breadcrumbs-fg: #dbd3ec;
+    --delete-button-bg: #c94566;
+    --delete-button-hover-bg: #8a3248;  
+    --button-hover-bg: #8c7db3;
+    --default-button-hover-bg: #867ba3;
+    --link-fg: #71668d;
+    --header-color: #f2f2fa;
+    --darkened-bg: #ffffff;
+    --breadcrumbs-link-fg: #ffffff70;
+}
+
+#header {
+    color: #ffffff;
+}
+
+.sticky tr:hover {
+    background: #e9e9ee;
+}
+
+#content tr:hover {
+    background: #e9e9ee;
+}

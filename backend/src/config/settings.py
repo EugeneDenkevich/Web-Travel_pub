@@ -162,12 +162,6 @@ REST_FRAMEWORK = {
     'TIME_FORMAT': "%H:%M",
 }
 
-DEFAULT_IMAGES = {
-    'main': ('default', 'main.jpg'), 
-    'houses': ('default', 'houses.jpg'),
-    'kitchen': ('default', 'kitchen.jpg'),
-    'entertainment': ('default', 'entertainment.jpg'),
-}
 
 MAX_IMAGE_SIZE_MB = 2.0
 MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * (1024**2)
