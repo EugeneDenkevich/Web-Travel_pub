@@ -18,7 +18,7 @@ class MainPageModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.MainPage
-        exclude = ['id']
+        exclude = ['id', 'was_changed']
         swagger_schema_fields = {
             'required': [
                 'title',

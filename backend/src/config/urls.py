@@ -10,6 +10,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from config import views
 
 from object.views import *
 
@@ -29,9 +30,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
 
-    # JWT athentication
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Index redirect
+    path('', views.index_redirect, name='index'),
 
     # Doc
     path('swagger-ui/',
@@ -43,14 +43,16 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0),
             name='schema-json'),
-    path('admin/doc/', include('django.contrib.admindocs.urls')),
 
     # API
-    path('admin/', admin.site.urls),
+  
     path('api/', include('object.urls')),
     path('api/', include('entertainments.urls')),
     path('api/', include('info.urls')),
     path('api/', include('pages.urls')),
+
+    # Admin
+    path('admin/', admin.site.urls),
 
     # Toolbar
     # path("__debug__/", include("debug_toolbar.urls")),

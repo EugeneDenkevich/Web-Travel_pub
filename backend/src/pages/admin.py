@@ -1,32 +1,49 @@
 from typing import Any
+import re
+
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminFileWidget
 from django import forms
-from django.http.request import HttpRequest
 from django.utils.safestring import mark_safe
 from sorl.thumbnail import get_thumbnail
+from django.core.exceptions import ValidationError
 
 from config.utils import manual_formsets
 from . import models
 
 
 class MainPageForm(forms.ModelForm):
-    house_title = forms.CharField(label = u'Домики', help_text='Можете указать своё название')
-    kitchen_title = forms.CharField(label = u'Кухня', help_text='Можете указать своё название')
+    house_title = forms.CharField(label = u'Домики',
+                                  help_text='Можете указать своё название для раздела "Домики"')
+    kitchen_title = forms.CharField(label = u'Кухня',
+                                    help_text='Можете указать своё название для раздела "Кухня"')
     entertainment_title = forms.CharField(label = u'Развлечения',
-                                          help_text='Можете указать своё название')
+                                          help_text='Можете указать своё название для раздела "Развлечения"')
     description = forms.CharField(widget=forms.Textarea(attrs={'cols': 40, 'rows': 5}), 
-                                  label = u'Описание', required=False)
+                                  label = u'Описание', required=False,
+                                  help_text='Расскажите о своей усадьбе')
     house_description = forms.CharField(widget=forms.Textarea(attrs={'cols': 40, 'rows': 5}), 
-                                        label = u'Описание', required=False)
+                                        label = u'Описание', required=False,
+                                        help_text='В этом блоке изложите общую информацию о ваших домиках.')
     kitchen_description = forms.CharField(widget=forms.Textarea(attrs={'cols': 40, 'rows': 5}), 
-                                          label = u'Описание', required=False)
+                                          label = u'Описание', required=False,
+                                          help_text='Расскажите об особеностях вашей кухни в этом блоке.')
     entertainment_description = forms.CharField(widget=forms.Textarea(attrs={'cols': 40, 'rows': 5}), 
-                                                label = u'Описание', required=False)
+                                                label = u'Описание', required=False,
+                                                help_text='Расскажите здесь, чем вы будете '
+                                                          'равзлекать своих гостей.')
 
 
 class PhotoObjectFrom(forms.ModelForm):
     file = forms.ImageField(widget=AdminFileWidget)
+
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if re.search(r'[а-яА-Я]', file.name):
+            raise ValidationError(
+                'Russian letters are not allowed'
+            )
+        return file
 
 
 class PhotoMainPageTabularInline(admin.TabularInline):
@@ -48,12 +65,50 @@ class PhotoMainPageTabularInline(admin.TabularInline):
 
 @admin.register(models.MainPage)
 class MainPageAdmin(admin.ModelAdmin):
+    fieldsets = [
+        (
+            'Заглавие сайта',
+            {
+                'fields':
+                [
+                    'title',
+                    'description',
+
+                ]
+            },
+        ),
+        (
+            'Домики',
+            {
+                'fields':
+                [
+                    'house_title',
+                    'house_description',
+                ]
+            },
+        ),
+        (
+            'Кухня',
+            {
+                'fields': [
+                    'kitchen_title',
+                    'kitchen_description',
+                ]
+            },
+        ),
+        ( 
+            'Развлечения',
+            {
+                'fields': [
+                    'entertainment_title',
+                    'entertainment_description',
+                ]
+            },
+        )
+    ]
     list_display = [
         'change',
-        'title',
-        'house_title',
-        'kitchen_title',
-        'entertainment_title',
+        'was_changed',
     ]
     inlines = [
         PhotoMainPageTabularInline
@@ -84,11 +139,32 @@ class MainPageAdmin(admin.ModelAdmin):
         return manual_formsets.improve_inline_formset(inline_admin_formsets)
 
 
+class BackPhotoAdminFileWidget(AdminFileWidget):
+    template_name = 'admin/widgets/backphoto_clearable_file_input.html'
+
+
+class BackPhotoFrom(forms.ModelForm):
+    photo_m = forms.ImageField(widget=BackPhotoAdminFileWidget,
+                               required=False,
+                               label='Фон Главная')
+    photo_h = forms.ImageField(widget=BackPhotoAdminFileWidget,
+                               required=False,
+                               label='Фон Домики')
+    photo_k = forms.ImageField(widget=BackPhotoAdminFileWidget,
+                               required=False,
+                               label='Фон Кухня')
+    photo_e = forms.ImageField(widget=BackPhotoAdminFileWidget,
+                               required=False,
+                               label='Фон Развлечения')
+
+
 @admin.register(models.BackPhoto)
 class BackPhotoModelAdmin(admin.ModelAdmin):
     list_display = [
         'change',
+        'was_changed',
     ]
+    form = BackPhotoFrom
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -119,19 +195,13 @@ class PolicyAgreementForm(forms.ModelForm):
 class PolicyAgreementModelAdmin(admin.ModelAdmin):
     list_display = [
         'change',
-        'this'
+        'was_changed',
     ]
     form = PolicyAgreementForm
 
     @admin.display(description='')
     def change(self, object):
         return mark_safe(f'<b>Изменить</b>')
-
-    @admin.display(description='')
-    def this(self, object):
-        res = (f"{object._meta.get_field('policy').verbose_name} "
-               f"и {object._meta.get_field('agreement').verbose_name}")
-        return res
 
     def has_add_permission(self, request, object=None):
         return False

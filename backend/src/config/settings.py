@@ -17,6 +17,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = True
 
+FRONTEND_URL = "http://zapovedny-front.eugenestudio.site/"
+
 ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = [
@@ -31,7 +33,6 @@ INTERNAL_IPS = [
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -43,13 +44,13 @@ INSTALLED_APPS = [
     'entertainments.apps.EntertainmentsConfig',
     'info.apps.InfoConfig',
     'pages.apps.PagesConfig',
+    'authentication.apps.AuthenticationConfig',
     
     # thrid side apps
-    # "debug_toolbar",
     'corsheaders',
     'sorl.thumbnail',
     'rest_framework',
-    'rest_framework_simplejwt',
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
@@ -152,9 +153,6 @@ LOGGING = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
     'DEFAULT_PERMISSION_CLASSES': (
         # 'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
@@ -167,3 +165,5 @@ MAX_IMAGE_SIZE_MB = 2.0
 MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * (1024**2)
 
 MAX_NUMBER_OF_GUESTS = 50
+
+AUTH_USER_MODEL = 'authentication.BaseUser'

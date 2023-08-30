@@ -2,7 +2,7 @@ import os
 
 from django.db import models
 
-from config.validators import validate_image_size
+from config.validators import validate_image_size, validate_name
 
 
 class Singleton(models.Model):
@@ -23,7 +23,7 @@ class Singleton(models.Model):
 
 class MainPage(Singleton):
     title = models.CharField(max_length=256, default='Заповедный остров',
-                             verbose_name='Название')
+                             verbose_name='Название сайта')
     description = models.TextField(blank=True, null=True,
                                    verbose_name='Описание')
     house_title = models.CharField(max_length=256, default='Домики',
@@ -38,6 +38,7 @@ class MainPage(Singleton):
                                            verbose_name='Развлечения')
     entertainment_description = models.TextField(blank=True, null=True,
                                                  verbose_name='Описание')
+    was_changed = models.DateField(auto_now=True, verbose_name=u'Изменено')
 
     def __str__(self):
         return 'Главная страница'
@@ -67,38 +68,46 @@ class PhotoMainPage(models.Model):
         verbose_name_plural = 'Фото'
     
     def __str__(self):
-        return f'ID - {self.id}'
+        return ''
     
 
 class BackPhoto(Singleton):
     photo_m = models.ImageField(upload_to='photo_pages',
-                                validators=[validate_image_size], verbose_name='Фон Главная',
+                                validators=[validate_image_size,
+                                            validate_name], verbose_name='Фон Главная',
                                 blank=True, null=True)
     photo_h = models.ImageField(upload_to='photo_pages',
-                                validators=[validate_image_size], verbose_name='Фон Домики',
+                                validators=[validate_image_size,
+                                            validate_name], verbose_name='Фон Домики',
                                 blank=True, null=True)
     photo_k = models.ImageField(upload_to='photo_pages',
-                                validators=[validate_image_size], verbose_name='Фон Кухня',
+                                validators=[validate_image_size,
+                                            validate_name], verbose_name='Фон Кухня',
                                 blank=True, null=True)
     photo_e = models.ImageField(upload_to='photo_pages',
-                                validators=[validate_image_size], verbose_name='Фон Развлечения',
+                                validators=[validate_image_size,
+                                            validate_name], verbose_name='Фон Развлечения',
                                 blank=True, null=True)
+    was_changed = models.DateField(auto_now=True, verbose_name=u'Изменено')
 
     class Meta:
         verbose_name = 'Фоновые фото'
         verbose_name_plural = 'Фоновые фото'
 
     def __str__(self):
-        return f'ID - {self.pk}'
+        return ''
 
 
 class PolicyAgreement(Singleton):
-    policy = models.TextField(verbose_name='Политика конфиденциальности', null=True)
-    agreement = models.TextField(verbose_name='Пользовательское соглашение', null=True)
+    policy = models.TextField(verbose_name='Политика конфиденциальности',
+                              null=True, blank=True)
+    agreement = models.TextField(verbose_name='Пользовательское соглашение',
+                                 null=True, blank=True)
+    was_changed = models.DateField(auto_now=True, verbose_name=u'Изменено')
 
     class Meta:
-        verbose_name = 'ПК и ПС'
-        verbose_name_plural = 'ПК и ПС'
+        verbose_name = 'Политика и соглашение'
+        verbose_name_plural = 'Политика и соглашение'
 
     def __str__(self):
-        return 'Политика и Соглашение'
+        return ''

@@ -12,5 +12,7 @@ RUN pip3 install --upgrade pip
 RUN pip3 install --upgrade setuptools wheel
 RUN pip3 install -r requirements.txt
 
-COPY ./check_admin.py ./
+COPY ./Makefile ./
 COPY ./src ./
+
+CMD ["make", "create_env_file"]

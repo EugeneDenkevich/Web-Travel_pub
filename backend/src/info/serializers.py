@@ -7,6 +7,12 @@ from .models import *
 class StringListSerializer(serializers.ListSerializer):
     child = serializers.CharField()
 
+    def to_representation(self, data):
+        res = data.instance.phones.all()
+        phone_numbers = list(map(lambda phone_object: 
+                                 str(phone_object.phone), res))
+        return phone_numbers
+
 
 class StringDictListSerializer(serializers.ListSerializer):
     child = serializers.DictField(child=serializers.CharField())
@@ -38,7 +44,8 @@ class InfoSerializer(serializers.ModelSerializer):
                 ],
                 'address': openapi.TYPE_STRING,
                 'comment': openapi.TYPE_STRING,
-                'geolocation': openapi.TYPE_STRING,
+                'latitude': openapi.TYPE_STRING,
+                'longitude': openapi.TYPE_STRING,
                 "currency": openapi.TYPE_STRING,
             }
         }

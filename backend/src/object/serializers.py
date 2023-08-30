@@ -1,16 +1,9 @@
-from collections import OrderedDict
-
 from drf_yasg import openapi
 from rest_framework import serializers
-from django.db.models import Count
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 
+from . import exceptions
 from .models import *
-
-
-class Test(serializers.Serializer):
-    rooms_count = serializers.CharField()
-    bed_types = serializers.CharField()
 
 
 class FileListSerializer(serializers.ListSerializer):
@@ -23,12 +16,6 @@ class StringListSerializer(serializers.ListSerializer):
 
 class StringDictListSerializer(serializers.ListSerializer):
     child = serializers.DictField(child=serializers.CharField())
-
-
-class FeatureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Feature
-        exclude = '__all__'
 
 
 class SocialSerializer(serializers.Serializer):
@@ -56,12 +43,20 @@ class ObjectRoomSerializer(serializers.ModelSerializer):
 
 
 class ObjectFeaturesSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+
     class Meta:
         model = ObjectFeature
-        fields = '__all__'
+        fields = [
+            'id',
+            'type'
+        ]
 
-    def to_representation(self, instance):
-        return dict(FEATURES_CHOICES)[instance.type]
+    def get_id(self, obj):
+        for i in range(len(FEATURES_CHOICES)):
+            if FEATURES_CHOICES[i][0] == obj.type:
+                return i + 1
+
 
 
 class IntegerDictListSerializer(serializers.ListSerializer):
@@ -87,8 +82,10 @@ class ObjectSerializer(serializers.ModelSerializer):
                     openapi.TYPE_STRING,
                 ],
                 "features": [
-                    openapi.TYPE_STRING,
-                    openapi.TYPE_STRING,
+                    {
+                        "id": 0,
+                        "type": openapi.TYPE_STRING,
+                    }
                 ],
                 "bed_count": 0,
                 "title": openapi.TYPE_STRING,
@@ -97,25 +94,21 @@ class ObjectSerializer(serializers.ModelSerializer):
                 "description_long": openapi.TYPE_STRING,
                 "price_weekday": openapi.FORMAT_DECIMAL,
                 "price_holiday": openapi.FORMAT_DECIMAL,
-                # "created_date": openapi.FORMAT_DATE,
-                # "is_reserved": openapi.TYPE_BOOLEAN,
                 "beds_types": [
                     {
-                        "type_1": 0,
-                    },
-                    {
-                        "type_2": 0,
-                    },
+                        "id": 0,
+                        "type": openapi.TYPE_STRING,
+                        "count": 0
+                    }
                 ],
                 "rooms_types": [
                     {
-                        "type_1": 0,
-                    },
-                    {
-                        "type_2": 0,
-                    },
+                        "id": 0,
+                        "type": openapi.TYPE_STRING,
+                        "count": 0
+                    }
                 ]
-            },
+            }
         }
 
 
@@ -124,37 +117,26 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Purchase
-        fields = [
-            'fio',
-            'sex',
-            'passport_country',
-            'address',
-            'phone_number',
-            'email',
-            'telegram',
-            'object',
-            'desired_arrival',
-            'desired_departure',
+        exclude = [
+            'status',
+            'is_finished',
+            'was_object',
         ]
-
-
+ 
     def validate(self, data):
         """
         Check if desired arrival lower than desired departure
         """
         if data.get('desired_arrival') > data.get('desired_departure'):
-            raise ValidationError({
-                'desired_departure': 'Дата выезда должна быть раньше даты заезда'
-            })
-        house = data.get('object')
-        """
-        Check if house is reserved
-        """
-        if house.purchases.all():
-            raise ValidationError({
-                'object': 'Этот домик уже занят'
-            })
+            raise exceptions.DesiredArivalExeption()
         return data
+    #     house = data.get('object')
+    #     """
+    #     Check if house is reserved
+    #     """
+    #     if house.purchases.all():
+    #         raise exceptions.HouseIsTakenExeption()
+    #     return data
 
 
 class ImageListSerializer(serializers.ListSerializer):

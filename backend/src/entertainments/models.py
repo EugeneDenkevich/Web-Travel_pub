@@ -8,7 +8,7 @@ class Entertainment(models.Model):
         max_length=256,
         verbose_name = 'Название'
     )
-    description_short = models.TextField(max_length=300, verbose_name = 'Кратко о развлечении')
+    description_short = models.TextField(max_length=300, verbose_name = 'Короткое описание')
     description_long = models.TextField(verbose_name = 'Полное описание', blank=True, null=True)
 
     class Meta:
@@ -21,7 +21,8 @@ class Entertainment(models.Model):
 
 class EntertainmentPrice(models.Model):
     header = models.CharField(max_length=256, verbose_name = 'Услуга')
-    price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name = 'Цена')
+    price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name = 'Цена',
+                                blank=True, null=True)
     entertainment = models.ForeignKey(
         to='Entertainment', on_delete=models.CASCADE, related_name='prices')
 
@@ -30,7 +31,7 @@ class EntertainmentPrice(models.Model):
         verbose_name_plural = 'Услуги и цены'
 
     def __str__(self):
-        return self.header
+        return ''
 
 
 class PhotoEntertainment(models.Model):
@@ -51,7 +52,7 @@ class PhotoEntertainment(models.Model):
         verbose_name_plural = 'Фото'
 
     def __str__(self):
-        return f'Photo of "{self.entertainment}"'
+        return ''
     
 
 class NearestPlace(models.Model):

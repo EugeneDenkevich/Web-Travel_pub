@@ -1,6 +1,7 @@
+import re
+
 from django.core.exceptions import ValidationError
-from .settings import (MAX_IMAGE_SIZE, MAX_IMAGE_SIZE_MB,
-                       MAX_NUMBER_OF_GUESTS)
+from .settings import (MAX_IMAGE_SIZE, MAX_IMAGE_SIZE_MB)
 
 
 def validate_image_size(image):
@@ -11,3 +12,10 @@ def validate_image_size(image):
             )
     except FileNotFoundError:
         return
+    
+
+def validate_name(image):
+    if re.search(r'[а-яА-Я]', image.name):
+        raise ValidationError(
+            'Russian letters are not allowed'
+        )

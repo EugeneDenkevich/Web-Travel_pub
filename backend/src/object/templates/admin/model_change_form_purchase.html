@@ -17,17 +17,18 @@
 {% block object-tools %}
   {% for fieldset in adminform %}
     {% if fieldset.form.instance.fio %}
-      {% if fieldset.form.instance.status is False and not fieldset.form.instance.was_object %}
+      {% if fieldset.form.instance.stat == 'New' and not fieldset.form.instance.was_object %}
         <input style="margin-right: 5px;" type="submit" value="Одобрить заявку" onclick="location.href=`{% url 'admin:change_purchase_status' %}`"/>
-      {% elif fieldset.form.instance.status is True and not fieldset.form.instance.was_object %}
-        <input style="margin-right: 5px;" type="submit" value="Прервать заявку" onclick="location.href=`{% url 'admin:change_purchase_status' %}`"/>
-      {% else %}
-      {% endif %}
+        <input type="submit" value="Отклонить заявку" onclick="location.href=`{% url 'admin:change_purchase_denied' %}`"/>
+      {% elif fieldset.form.instance.stat == 'Approved' and not fieldset.form.instance.was_object %}
       {% if fieldset.form.instance.is_finished is False %}
         <input type="submit" value="Завершить заявку" onclick="location.href=`{% url 'admin:change_purchase_is_finished' %}`"/>
       {% else %}
       {% endif %}
-      {% if fieldset.form.instance.status is True and not fieldset.form.instance.was_object %}
+      {% else %}
+      {% endif %}
+
+      {% if fieldset.form.instance.stat == 'Approved' and not fieldset.form.instance.was_object %}
       <form id="purchase_form" novalidate="">
         <div>
           <fieldset class="module aligned ">

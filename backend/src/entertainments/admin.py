@@ -1,13 +1,12 @@
-import json
 from typing import Any
+import re
 
 from django.contrib import admin
 from django.utils.safestring import mark_safe
-from django.template.defaultfilters import capfirst
-from django.utils import translation
 from django import forms
 from django.contrib.admin.widgets import AdminFileWidget
 from sorl.thumbnail import get_thumbnail
+from django.core.exceptions import ValidationError
 
 from config.utils import manual_formsets
 from .models import *
@@ -25,6 +24,14 @@ class PhotoEntertainmentForm(forms.ModelForm):
         model = PhotoEntertainment
         fields = ["file", "id"]
 
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if re.search(r'[а-яА-Я]', file.name):
+            raise ValidationError(
+                'Russian letters are not allowed'
+            )
+        return file
+
 
 class PhotoEntertainmentInline(admin.TabularInline):
     model = PhotoEntertainment
@@ -41,6 +48,14 @@ class PhotoEntertainmentInline(admin.TabularInline):
 
     preview.short_description = u'Превью'
     preview.allow_tags = True
+
+
+class EntertainmentForm(forms.ModelForm):
+    description_short = forms.CharField(widget=forms.Textarea(
+        attrs={'cols': 60, 'rows': 6}), label='Короткое описание')
+    description_long = forms.CharField(widget=forms.Textarea(
+        attrs={'cols': 60, 'rows': 6}), label='Полное описание',
+        required=False)
 
 
 @admin.register(Entertainment)
@@ -71,6 +86,7 @@ class EntertainmentAdmin(admin.ModelAdmin):
         EntertainmentPriceInline,
     ]
     list_display_links = ['preview', 'title_bold']
+    form = EntertainmentForm
 
     @admin.display(description='Фото')
     def preview(self, obj):
@@ -89,6 +105,11 @@ class EntertainmentAdmin(admin.ModelAdmin):
             request, formsets, inline_instances, obj)
         return manual_formsets.improve_inline_formset(inline_admin_formsets)
     
+    def change_view(self, request, object_id: str = None, form_url: str = '',
+                    extra_context = {}):
+        extra_context['model_title'] = self.model._meta.verbose_name
+        return super().change_view(request, object_id, form_url, extra_context)   
+
 
 class PhotoNearestForm(forms.ModelForm):
     file = forms.ImageField(widget=AdminFileWidget)
@@ -96,6 +117,14 @@ class PhotoNearestForm(forms.ModelForm):
     class Meta:
         model = PhotoNearestPlace
         fields = ["file", "id"]
+
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if re.search(r'[а-яА-Я]', file.name):
+            raise ValidationError(
+                'Russian letters are not allowed'
+            )
+        return file
         
 
 class NearestForm(forms.ModelForm):
@@ -128,11 +157,33 @@ class NearestAdmin(admin.ModelAdmin):
         PhotoNearestPlaceInline,
     ]
     form = NearestForm
+    list_display = [
+        'preview',
+        'title_bold',
+    ]
+    list_display_links = ['preview', 'title_bold']
+
+    @admin.display(description='Фото')
+    def preview(self, obj):
+        photo = obj.photos.all().first()
+        if photo:
+            img = get_thumbnail(photo.file, '70x70', crop='center', quality=99)
+            res = mark_safe(f'<img src="{img.url}">')
+            return res
+
+    @admin.display(description='Название')
+    def title_bold(self, obj):
+        return mark_safe(f'<b>{obj.title}</b>')
 
     def get_inline_formsets(self, request, formsets, inline_instances, obj: Any | None = ...):
         inline_admin_formsets = super().get_inline_formsets(
             request, formsets, inline_instances, obj)
         return manual_formsets.improve_inline_formset(inline_admin_formsets)
+
+    def change_view(self, request, object_id: str = None, form_url: str = '',
+                    extra_context = {}):
+        extra_context['model_title'] = self.model._meta.verbose_name
+        return super().change_view(request, object_id, form_url, extra_context)   
 
 
 class GaleryPhotoForm(forms.ModelForm):
@@ -141,6 +192,15 @@ class GaleryPhotoForm(forms.ModelForm):
     class Meta:
         model = PhotoGalery
         fields = ["file", "id"]
+
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if re.search(r'[а-яА-Я]', file.name):
+            raise ValidationError(
+                'Russian letters are not allowed'
+            )
+        return file
+
 
 class GaleryPhotoInline(admin.TabularInline):
     model = PhotoGalery
@@ -188,3 +248,8 @@ class GaleryAdmin(admin.ModelAdmin):
         inline_admin_formsets = super().get_inline_formsets(
             request, formsets, inline_instances, obj)
         return manual_formsets.improve_inline_formset(inline_admin_formsets)
+
+    def change_view(self, request, object_id: str = None, form_url: str = '',
+                    extra_context = {}):
+        extra_context['model_title'] = self.model._meta.verbose_name
+        return super().change_view(request, object_id, form_url, extra_context)

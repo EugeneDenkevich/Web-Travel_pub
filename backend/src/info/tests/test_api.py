@@ -11,7 +11,9 @@ class InfoAPITestCase(APITestCase):
         info = Info.objects.create(
             address = 'King street - 9',
             comment = 'Funny comment',
-            geolocation = 'New location'
+            latitude = "string",
+            longitude = "string",
+            currency = "byn"
         )
         social_1 = InfoSocial.objects.create(
             type = 'Facebook',

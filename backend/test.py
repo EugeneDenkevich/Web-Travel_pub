@@ -1,0 +1,1 @@
+print(1) if False else 2 and print(2)

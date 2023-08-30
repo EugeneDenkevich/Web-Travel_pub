@@ -1,8 +1,8 @@
 import json
 from typing import Any, List
+import re
 
-import os
-
+from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
 from django.http.request import HttpRequest
 from django.utils.safestring import mark_safe
@@ -11,9 +11,12 @@ from django.utils import translation
 from django import forms
 from django.contrib.admin.widgets import AdminFileWidget
 from sorl.thumbnail import get_thumbnail
+from django.core.exceptions import ValidationError
+
 
 from config.utils import manual_formsets
 from .models import *
+from .validators import validate_geo
 
 
 class PhotosInlineAdminFormSet(admin.helpers.InlineAdminFormSet):
@@ -37,9 +40,20 @@ class PhotosInlineAdminFormSet(admin.helpers.InlineAdminFormSet):
         )
 
 
+class PhoneForm(forms.ModelForm):
+    phone = forms.CharField()
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if not re.match(r'^[+]?\d{1,5}\s?[\(-]?\d{1,5}[\)-]?\s?(\d{1,5}-?){1,5}\d{1,5}$', phone):
+            raise ValidationError('Введите корректный номер телефона')
+        return phone
+
+
 class PhoneNumberInline(admin.TabularInline):
     model = PhoneNumber
     extra = 0
+    form = PhoneForm
 
 
 class InfoSocialForm(forms.ModelForm):
@@ -58,8 +72,10 @@ class InfoForm(forms.ModelForm):
                               label = u'Адрес')
     comment = forms.CharField(widget=forms.Textarea(attrs={'cols': 40, 'rows': 5}),
                               label = u'Комментарий', required=False)
-    geolocation = forms.CharField(widget=forms.Textarea(attrs={'cols': 40, 'rows': 5}),
-                                  label = u'Геолокация', required=False)
+    latitude = forms.CharField(required=False, validators=[validate_geo],
+                               label='Широта')
+    longitude = forms.CharField(required=False, validators=[validate_geo],
+                               label='Долгота')
 
 
 @admin.register(Info)
@@ -68,12 +84,36 @@ class InfoAdmin(admin.ModelAdmin):
         PhoneNumberInline,
         InfoSocialInline,
     ]
-    
+
+    fieldsets = [
+            ('Информация',
+            {
+                "classes": [
+                    "wide",
+                    "extrapretty"
+                ],
+                'fields': [
+                    'currency',
+                    'address',
+                    'comment',
+                ]
+            },),
+            ('Геолокация',
+            {
+                "classes": [
+                    "wide",
+                    "extrapretty"
+                ],
+                'fields': [
+                    'latitude',
+                    'longitude',
+                ]
+            })
+    ]
+
     list_display = [
         'change',
-        'address',
-        'comment',
-        'geolocation',
+        'was_changed',
     ]
     form = InfoForm
 
@@ -101,10 +141,22 @@ class InfoAdmin(admin.ModelAdmin):
         return manual_formsets.improve_inline_formset(inline_admin_formsets)
     
 
+class DishAdminFileWidget(AdminFileWidget):
+    template_name = 'admin/widgets/dish_clearable_file_input.html'
+    
+
 class DishForm(forms.ModelForm):
     title = forms.CharField(max_length=256)
     description = forms.CharField(widget=forms.Textarea(attrs={'cols': 60, 'rows': 5}), required=False)
-    photo = forms.ImageField(widget=AdminFileWidget, required=False)
+    photo = forms.ImageField(widget=DishAdminFileWidget, required=False)
+
+    def clean_photo(self):
+        file = self.cleaned_data.get('photo')
+        if re.search(r'[а-яА-Я]', file.name):
+            raise ValidationError(
+                'Russian letters are not allowed'
+            )
+        return file
 
 
 class DishesInline(admin.TabularInline):
@@ -146,6 +198,7 @@ class FeedingInfoAdmin(admin.ModelAdmin):
     
     list_display = [
         'change',
+        'was_changed',
     ]
 
     @admin.display(description='')
@@ -194,7 +247,6 @@ class RulesAdmin(admin.ModelAdmin):
     
     list_display = [
         'change',
-        'rules_list',
         'was_changed',
     ]
 

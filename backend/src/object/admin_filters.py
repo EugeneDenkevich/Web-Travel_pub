@@ -36,7 +36,7 @@ class PersNum(admin.SimpleListFilter):
         
 
 class IsReserved(admin.SimpleListFilter):
-    title = 'Показать'
+    title = 'По заказам'
     parameter_name = 'is_reserved'
 
     def lookups(self, request, model_admin):

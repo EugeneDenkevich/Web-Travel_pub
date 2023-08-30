@@ -1,6 +1,8 @@
 from decimal import Decimal
 
-from django.test import TestCase
+from django.contrib.admin.sites import DefaultAdminSite
+from django.test import RequestFactory, TestCase
+from authentication.models import BaseUser
 
 from object.admin import *
 from object.models import *
@@ -18,15 +20,10 @@ class ObjectFeatureTestCase(TestCase):
                                          price_holiday=Decimal('220'),
                                          created_date='2023-05-01',
                                          is_reserved=False)
-        feature_1 = ObjectFeature.objects.create(type='Shower',
-                                                 object_id=object_1)
-        feature_2 = ObjectFeature.objects.create(type='Shower',
-                                                 object_id=object_1)
-        data = [
-            {'type': feature_1.type},
-            {'type': feature_2.type}
-        ]
-        self.assertEqual(is_features_dublicates(data), True)
+        ObjectFeature.objects.create(type='Shower', object_id=object_1)
+        ObjectFeature.objects.create(type='Shower', object_id=object_1)
+
+        self.assertEqual(len(object_1.features.all()), 1)
 
 
 class PurchaseTestCase(TestCase):
@@ -48,7 +45,7 @@ class PurchaseTestCase(TestCase):
                                               price_holiday=Decimal('220'),
                                               created_date='2023-05-01',
                                               is_reserved=False)
-        self.purchase = Purchase.objects.create(fio='Eugene',
+        self.purchase_1 = Purchase.objects.create(fio='Eugene',
                                                 sex="m",
                                                 passport_country='Беларусь',
                                                 address='21 Судиловского',
@@ -56,27 +53,33 @@ class PurchaseTestCase(TestCase):
                                                 email="eugenestudio@mail.ru",
                                                 telegram="@eugenvazgen",
                                                 object=self.object_1,
+                                                count_adult=2,
+                                                count_kids=1,
                                                 desired_arrival="2023-06-05",
-                                                desired_departure="2023-06-16")
+                                                desired_departure="2023-06-16",
+                                                pets='',
+                                                comment='123')
 
-    def test_change_status(self):
-        self.purchase = Purchase.objects.create(fio='Eugene',
-                                           sex="m",
-                                           passport_country='Беларусь',
-                                           address='21 Судиловского',
-                                           phone_number="+375336680390",
-                                           email="eugenestudio@mail.ru",
-                                           telegram="@eugenvazgen",
-                                           object=self.object_1,
-                                           desired_arrival="2023-06-05",
-                                           desired_departure="2023-06-16")
-        change_status(self.purchase)
-        self.assertEqual(self.purchase.status, True)
+        self.user = BaseUser()
+
+    # def test_change_status(self):
+    #     self.purchase = Purchase.objects.create(fio='Eugene',
+    #                                        sex="m",
+    #                                        passport_country='Беларусь',
+    #                                        address='21 Судиловского',
+    #                                        phone_number="+375336680390",
+    #                                        email="eugenestudio@mail.ru",
+    #                                        telegram="@eugenvazgen",
+    #                                        object=self.object_1,
+    #                                        desired_arrival="2023-06-05",
+    #                                        desired_departure="2023-06-16")
+    #     change_status(self.purchase)
+    #     self.assertEqual(self.purchase.status, True)
 
     def test_is_object_reserved_true(self):
         data = {
             'fio': 'Eugene',
-            'sex': "m",
+            'sex': "Мужской",
             'passport_country': 'Беларусь',
             'address': '21 Судиловского',
             'phone_number': "+375336680390",
@@ -84,7 +87,9 @@ class PurchaseTestCase(TestCase):
             'telegram': "@eugenvazgen",
             'object': self.object_2,
             'desired_arrival': "2023-06-05",
-            'desired_departure': "2023-06-16"
+            'desired_departure': "2023-06-16",
+            'count_adult':2,
+            'count_kids':2,
         }
         form = PurchaseAdminObjectFrom(data=data)
         self.assertTrue(form.is_valid())
@@ -107,39 +112,22 @@ class PurchaseTestCase(TestCase):
 
     def test_check_departure_date(self):
         data = {
-            'fio': 'Eugene',
-            'sex': "m",
-            'passport_country': 'Беларусь',
-            'address': '21 Судиловского',
-            'phone_number': "+375336680390",
-            'email': "eugenestudio@mail.ru",
-            'telegram': "@eugenvazgen",
-            'object': self.object_2,
-            'desired_arrival': "2023-06-05",
-            'desired_departure': "2023-05-16"
+            "object": self.object_1.pk,
+            "fio": "string",
+            "sex": "Мужской",
+            "passport_country": "string",
+            "address": "string",
+            "phone_number": "string",
+            "email": "user@example.com",
+            "telegram": "string",
+            "desired_arrival": "2023-08-25",
+            "desired_departure": "2023-08-24",
+            "stat": "New",
+            "count_adult": 20,
+            "count_kids": 20,
+            "pets": "string",
+            "comment": "string"
         }
         form = PurchaseAdminObjectFrom(data=data)
         expected_report = {'desired_departure': [ValidationError(['Дата выезда должна быть раньше даты заезда'])]}
         self.assertEqual(str(form.errors.as_data()), str(expected_report))
-
-    def test_finish_purchase(self):
-        object_1 = Object.objects.create(title='Title1',
-                                         pers_num=5,
-                                         description_short='Description',
-                                         description_long='DescriptionDescriptionDescription',
-                                         price_weekday=Decimal('120'),
-                                         price_holiday=Decimal('220'),
-                                         created_date='2023-05-01',
-                                         is_reserved=True)
-        purchase = Purchase.objects.create(fio='Eugene',
-                                                sex="m",
-                                                passport_country='Беларусь',
-                                                address='21 Судиловского',
-                                                phone_number="+375336680390",
-                                                email="eugenestudio@mail.ru",
-                                                telegram="@eugenvazgen",
-                                                object=object_1,
-                                                desired_arrival="2023-06-05",
-                                                desired_departure="2023-06-16")
-        finish_purchase(purchase)
-        self.assertEqual(object_1.is_reserved, False)

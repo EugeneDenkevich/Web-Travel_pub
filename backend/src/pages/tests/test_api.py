@@ -1,9 +1,8 @@
 from rest_framework.test import APITestCase
-from rest_framework import status
 from django.core.files.images import ImageFile
 from django.urls import reverse
 
-from pages import serializers, models
+from pages import models
 
 
 class MainPageAPITestCase(APITestCase):
@@ -24,16 +23,9 @@ class MainPageAPITestCase(APITestCase):
         response = self.client.get(url)
         file_name = self.photo_main_page_1.file.path.split(
                                             'tests_media')[1][1:]
-        expected_data = {'description': None,
-                'entertainment_description': None,
-                'entertainment_title': 'test',
-                'house_description': None,
-                'house_title': 'test',
-                'id': 1,
-                'kitchen_description': None,
-                'kitchen_title': 'Кухня',
-                'photos': [f'http://testserver/media/'
-                           f'photo_main_page/tests_media/{file_name}'],
-                'title': 'test'}
+        expected_data = {'photos': [f'http://testserver/media/photo_main_page/tests_media/{file_name}'],
+                         'title': 'test', 'description': None, 'house_title': 'test',
+                         'house_description': None, 'kitchen_title': 'Кухня', 'kitchen_description': None,
+                         'entertainment_title': 'test', 'entertainment_description': None}
         real_data = dict(response.data[0])
         self.assertEqual(real_data, expected_data)

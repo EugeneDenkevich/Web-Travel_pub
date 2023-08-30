@@ -24,7 +24,8 @@ class ObjectModelViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """
-        Append beds_types and rooms_types by 2 query instead of the whole list of COUNT(*) query
+        Append beds_types and rooms_types by 2 query
+        instead of the whole list of COUNT(*) query
         """
         response = super().list(request, *args, **kwargs)
         response.data = get_beds_and_rooms(response.data)

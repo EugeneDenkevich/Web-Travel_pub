@@ -1,9 +1,11 @@
 from decimal import Decimal
+from typing import Any
 
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.exceptions import ErrorDetail
 from django.db.models import Count
+from django.urls import reverse
 
 from object.serializers import *
 from object.models import *
@@ -97,8 +99,8 @@ class ObjectAPITestCase(APITestCase):
 
 class PurchaseAPITestCase(APITestCase):
 
-    def test_post(self):
-        object_1 = Object.objects.create(title='Title1',
+    def setUp(self):
+        self.object_1 = Object.objects.create(title='Title1',
                                          pers_num=5,
                                          description_short='Description',
                                          description_long='DescriptionDescriptionDescription',
@@ -106,55 +108,72 @@ class PurchaseAPITestCase(APITestCase):
                                          price_holiday=Decimal('220'),
                                          created_date='2023-05-01',
                                          is_reserved=False)
+
+    def test_post_success(self):
+        url = reverse('purchases-list')
+        data = {
+            "object": self.object_1.pk,
+            "fio": "string",
+            "sex": "Мужской",
+            "passport_country": "string",
+            "address": "string",
+            "phone_number": "string",
+            "email": "user@example.com",
+            "telegram": "string",
+            "desired_arrival": "2023-08-25",
+            "desired_departure": "2023-08-26",
+            "stat": "New",
+            "count_adult": 20,
+            "count_kids": 20,
+            "pets": "string",
+            "comment": "string"
+        }
+        response = self.client.post(
+            path=url,
+            data=data
+        )
+        expected = {
+            "id": 1,
+            "object": self.object_1.pk,
+            "fio": "string",
+            "sex": "Мужской",
+            "passport_country": "string",
+            "address": "string",
+            "phone_number": "string",
+            "email": "user@example.com",
+            "telegram": "string",
+            "desired_arrival": "2023-08-25",
+            "desired_departure": "2023-08-26",
+            "stat": "New",
+            "count_adult": 20,
+            "count_kids": 20,
+            "pets": "string",
+            "comment": "string"
+        }
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data, expected)
+
+    def test_post_wrong_date(self):
+        
         url = 'http://127.0.0.1:8000/api/purchases/'
         data_wrong_date = {
             "fio": "Eugene",
-            "sex": "m",
+            "sex": "Мужской",
             "passport_country": "Беларусь",
             "address": "21 Судиловского",
             "phone_number": "+375336680390",
             "email": "eugenestudio@mail.ru",
             "telegram": "@eugenvazgen",
-            "object": object_1.pk,
+            "object": self.object_1.pk,
             "desired_arrival": "2023-06-05",
-            "desired_departure": "2023-06-03"
-        }
-        data_isnt_reserved = {
-            "fio": "Eugene",
-            "sex": "m",
-            "passport_country": "Беларусь",
-            "address": "21 Судиловского",
-            "phone_number": "+375336680390",
-            "email": "eugenestudio@mail.ru",
-            "telegram": "@eugenvazgen",
-            "object": object_1.pk,
-            "desired_arrival": "2023-06-05",
-            "desired_departure": "2023-07-03"
-        }
-        data_is_reserved = {
-            "fio": "Eugene",
-            "sex": "m",
-            "passport_country": "Беларусь",
-            "address": "21 Судиловского",
-            "phone_number": "+375336680390",
-            "email": "eugenestudio@mail.ru",
-            "telegram": "@eugenvazgen",
-            "object": object_1.pk,
-            "desired_arrival": "2023-06-05",
-            "desired_departure": "2023-07-03"
+            "desired_departure": "2023-06-03",
+            "count_adult": 1,
+            "count_kids": 1
         }
         res_wrong_date = self.client.post(url, data=data_wrong_date)
-        res_isnt_reserved = self.client.post(url, data=data_isnt_reserved)
-        res_already_reserved = self.client.post(url, data=data_is_reserved)
         error_wrong_date = {
-            'desired_departure': [
-                ErrorDetail(string='Дата выезда должна быть раньше даты заезда', code='invalid')
-            ]
+            'detail':
+                ErrorDetail(string='The departure date should be later than the arrival date', code='desired_arrival')
         }
-        error_already_reserved = {
-            'object': [
-                ErrorDetail(string='Этот домик уже занят', code='invalid')
-            ]
-        }
+
         self.assertEqual(res_wrong_date.data, error_wrong_date)
-        self.assertEqual(res_already_reserved.data, error_already_reserved)

@@ -4,22 +4,46 @@ from .models import *
 
 
 def get_beds_and_rooms(response_data):
+    """
+    Calculate bads and rooms counts
+    and make a dictionary in response data
+    """
     if isinstance(response_data, dict):
         # For one object
-        query_beds = Bed.objects.filter(object_id=response_data.get('id')).values('type').annotate(Count('id')).order_by()
-        print(query_beds)
-        query_rooms = Room.objects.filter(object_id=response_data.get('id')).values('type').annotate(Count('id')).order_by()
-        print(query_rooms)
+        query_beds = Bed.objects.filter(
+            object_id=response_data.get('id')).values(
+            'type').annotate(Count('id')).order_by()
+        query_rooms = Room.objects.filter(
+            object_id=response_data.get('id')).values(
+            'type').annotate(Count('id')).order_by()
 
         response_data['beds_types'] = []
         response_data['rooms_types'] = []
         for bed in query_beds:
+            bed_type = dict(BEDS).get(bed.get('type'))
+            id = 0
+            for i in range(len(BEDS)):
+                if BEDS[i][1] == bed_type:
+                    id = i + 1
             response_data['beds_types'].append(
-                {dict(BEDS).get(bed.get('type')): bed.get('id__count')}
+                {
+                    'id': id,
+                    'type': bed_type,
+                    'count': bed.get('id__count'),
+                }
             )
         for room in query_rooms:
+            room_type = dict(ROOMS).get(room.get('type'))
+            id = 0
+            for i in range(len(BEDS)):
+                if BEDS[i][1] == bed_type:
+                    id = i + 1
             response_data['rooms_types'].append(
-                {dict(ROOMS).get(room.get('type')): room.get('id__count')}
+                {
+                    'id': id,
+                    'type': room_type,
+                    'count': room.get('id__count'),
+                }
             )
         return response_data
     # For all objects
@@ -32,63 +56,71 @@ def get_beds_and_rooms(response_data):
         object['rooms_types'] = []
         for bed in query_beds:
             if bed['object_id'] == object['id']:
+                bed_type = dict(BEDS).get(bed.get('type'))
+                id = 0
+                for i in range(len(BEDS)):
+                    if BEDS[i][1] == bed_type:
+                        id = i + 1
                 object['beds_types'].append(
-                    {dict(BEDS).get(bed.get('type')): bed.get('id__count')}
+                    {
+                        'id': id,
+                        'type': bed_type,
+                        'count': bed.get('id__count'),
+                    }
                 )
         for room in query_rooms:
             if room['object_id'] == object['id']:
+                room_type = dict(ROOMS).get(room.get('type'))
+                id = 0
+                for i in range(len(ROOMS)):
+                    if ROOMS[i][1] == room_type:
+                        id = i + 1
                 object['rooms_types'].append(
-                    {dict(ROOMS).get(room.get('type')): room.get('id__count')}
+                    {
+                        'id': id,
+                        'type': room_type,
+                        'count': room.get('id__count'),
+                    }
                 )
     return response_data
-
-
-def is_features_dublicates(cleaned_data):
-    """
-    Check if object's feature has a dublicate
-    """
-    res = [f.get('type') for f in cleaned_data]
-    if res[-1] in res[:-1]:
-        return True
-    else:
-        return False
 
 
 def change_status(purchase):
     if purchase is None:
         return
     else:
-        try:
-            house = purchase.object
-            house_is_reserved = purchase.object.is_reserved
-        except:
-            return
-        if purchase.status == True:
-            if house_is_reserved == True:
-                purchase.status = False
-                purchase.save()
-                house.is_reserved = False
-                house.save()
-            else:
-                purchase.status = False
-                purchase.save()
-        elif purchase.status == False:
-            if house.is_reserved == False:
-                purchase.status = True
-                purchase.save()
-                house.is_reserved = True
-                house.save()
-            else:
-                purchase.status = True
-                purchase.save()
+        purchase.stat = 'Approved'
+        purchase.save()
+        print('here')
+        house = purchase.object
+        house.is_reserved = True
+        house.save()
+
 
 
 def finish_purchase(purchase):
     purchase.is_finished = True
     purchase.was_object = purchase.object
+    purchase.stat = 'Closed'
     purchase.save()
     house = purchase.object
-    house.is_reserved = False
     purchase.object = None
+    if not house.has_approved_purchases:
+        house.is_reserved = False
     purchase.save()
     house.save()
+
+def deny_purchase(purchase):
+    if purchase is None:
+        return
+    else:
+        purchase.is_finished = True
+        purchase.was_object = purchase.object
+        purchase.stat = 'Denied'
+        purchase.save()
+        house = purchase.object
+        purchase.object = None
+        if not house.has_approved_purchases:
+            house.is_reserved = False
+        purchase.save()
+        house.save()

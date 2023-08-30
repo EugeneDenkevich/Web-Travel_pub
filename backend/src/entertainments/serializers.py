@@ -30,7 +30,7 @@ class EntertainmentPhotoSerializer(serializers.ModelSerializer):
 
 
 class EntertainmentSerializer(serializers.ModelSerializer):
-    prices = EntertainmentPriceSerializer(many=True)
+    prices = EntertainmentPriceSerializer(many=True, required=False)
     photos = EntertainmentPhotoSerializer(many=True)
 
     class Meta:

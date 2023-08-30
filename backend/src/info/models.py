@@ -35,8 +35,11 @@ class Info(SingletonModel):
     address = models.TextField(max_length=1000, verbose_name=u'Адрес')
     comment = models.TextField(
         max_length=1000, verbose_name=u'Комментарий', blank=True, null=True)
-    geolocation = models.TextField(
-        max_length=1000, verbose_name=u'Геолокация', blank=True, null=True)
+    latitude = models.CharField(
+        max_length=10, verbose_name='Широта', blank=True, null=True)
+    longitude = models.CharField(
+        max_length=10, verbose_name='Долгота', blank=True, null=True)
+    was_changed = models.DateField(auto_now=True, verbose_name=u'Изменено')
 
     class Meta:
         verbose_name = 'Общая информация'
@@ -55,7 +58,7 @@ class Info(SingletonModel):
 
 
 class PhoneNumber(models.Model):
-    phone = models.CharField(max_length=256, verbose_name=u'Телефон')
+    phone = models.CharField(max_length=20, verbose_name='Номер телефона')
     info = models.ForeignKey(
         to='Info',
         related_name='phones',
@@ -66,6 +69,9 @@ class PhoneNumber(models.Model):
     class Meta:
         verbose_name = u'Телефон'
         verbose_name_plural = u'Телефоны'
+
+    def __repr__(self):
+        return self.phone
 
     def __str__(self):
         return ''
@@ -94,6 +100,8 @@ class InfoSocial(models.Model):
 
 
 class FeedingInfo(SingletonModel):
+    was_changed = models.DateField(auto_now=True, verbose_name=u'Изменено')
+
     class Meta:
 
         verbose_name = u'О питании'
@@ -156,7 +164,7 @@ class RulesInfo(SingletonModel):
 
 
 class Rule(models.Model):
-    content = models.TextField(max_length=1000, verbose_name='Содержание')
+    content = models.TextField(max_length=80, verbose_name='Содержание')
     rules = models.ForeignKey(to='RulesInfo', related_name='rule',
                               on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateField(
