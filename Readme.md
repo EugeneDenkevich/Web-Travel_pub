@@ -1,22 +1,22 @@
 # "Web-Travel"
-## Webiste for holders
+## Webiste for the holders of manors
 
 ### Lounch instruction:
-After cloning the repository open it as a work directory. Then do the following:
-
-```bash
-cp backend/.env-example backend/.env
-```
+Use docker:
 ```bash
 docker-compose up --build -d
 ```
+Use python:
+```bash
+not implemented
+```
 
-#### After everything above type http://127.0.0.1:4000/swagger-ui in your browser.
+#### After that type http://127.0.0.1:8000/swagger-ui in your browser.
 
-#### Admin-panel http://127.0.0.1:4000/admin
-- user: admin
+#### Admin-panel http://127.0.0.1:8000/admin
+- user: user@user.ru
 - password: 123123
 
 Notes:
-- If django can't connect to database, just waite a minute: it means that the mysql hasn't create the neccessary db yet.
-- If some of containters didn't up, just try up it again, it must works;
+- If django can't connect to database, just wait a minute: it means that MySQL hasn't created the neccessary database yet.
+- If some of containters didn't up, just try up it again;
